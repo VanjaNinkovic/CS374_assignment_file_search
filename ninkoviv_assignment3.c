@@ -97,7 +97,21 @@ char* find_smallest() {
 }
 
 // function that returns 1 or 0 depending on if the file exists within the directory or not
-int find_by_name() {
+int find_by_name(char* name) {
+    // open the current directory
+    DIR* currDir = opendir(".");
+    struct dirent *entry;
+    
+    // read through the directory to see if the file name exists
+    // If file name is found return 1 otherwise return 0
+    while((entry = readdir(currDir)) != NULL){
+        if(strcmp(entry->d_name, name) == 0){
+            closedir(currDir);
+            return 1;
+        }
+    }
+    closedir(currDir);
+    return 0;
 
 }
 
@@ -145,7 +159,16 @@ int main() {
                 }
                 // Ask the user to enter a specific file name to parse
                 else if(second_choice == 3){
-                    printf("You chose to enter a specific file!\n");
+                    char* custom_name = malloc(256 * sizeof(char)); // var to store user inputted file name
+                    printf("Enter the complete file name: ");
+                    scanf("%s", custom_name);
+                    if(find_by_name(custom_name) == 0){
+                        printf("The file %s was not found. Try again.\n", custom_name);
+                        free(custom_name);
+                        continue;
+                    }
+                    printf("File name '%s' found and will be processed.\n", custom_name);
+                    free(custom_name);
                     break;
                 }
                 // Prompt the user to choose again as their input was incorrect
