@@ -114,6 +114,19 @@ int find_by_name(char* name) {
     return 0;
 
 }
+// function that will create a randomly named directory when called
+char* create_directory(){
+    char *file_name = malloc(50 * sizeof(char));
+    strcpy(file_name, "ninkoviv.movies."); // prefix to attach to all directory names)
+    char suffix[10]; // space to turn int random number into a string
+    int rand_num = random() % 100000; // grab random number to be suffix of file
+    sprintf(suffix, "%d", rand_num); // turn number into a string
+    strcat(file_name, suffix); // combine prefix and suffix into a filename
+
+    // create diretory with rwxr-x--- permissions
+    mkdir(file_name, 0750);
+    return file_name;
+}
 
 
 
@@ -123,8 +136,10 @@ int main() {
     int menu_choice; // var to store choice at the first menu 
     int second_choice; // var to store choice at the second menu
     char* file_name; // var to store the file name to be processed
+    char* directory_name; // var to store the created directory name
+    srandom(726); // Seeded the random calls
     while(1) {
-        
+
         printf("1. Select file to process\n");
         printf("2. Exit the program\n\n");
         printf("Enter a choice 1 or 2: ");
@@ -146,8 +161,15 @@ int main() {
                 // Begin to parse the largest file in the current directory
                 if(second_choice == 1) {
                     file_name = find_largest();
+                    //create a directory that ends in a random numbers 0-99999
+                    directory_name = create_directory();
                     printf("The largest file in the directory is: %s\n", file_name);
+                    printf("The name of the directory is: %s", directory_name);
+                    
+                   
+                    // free dynamically assigned memory from functions
                     free(file_name);
+                    free(directory_name);
                     break;
                 }
                 // Begin to parse the smallest file in the current directory
