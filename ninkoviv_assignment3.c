@@ -241,12 +241,24 @@ char* create_directory(){
 }
 
 
-void parse_data(struct movie* data){
+void parse_data(struct movie* data, char* directory_name){
     struct movie* curMovie;
-    curMovie = data;
+    curMovie = data; // movie linked list
+    char file_name[50]; // file name
+    char file_path[300]; // file path
+
     // Iterate through linked list and print movie if it matches the year parameter
     while(curMovie != NULL) {
-        //do something
+        // created the file path to be used to create files
+        sprintf(file_name, "%d.txt", curMovie->year);
+        sprintf(file_path, "%s/%s", directory_name, file_name);
+
+        // open file and write the new movie title then close the file
+        FILE *movie_file = fopen(file_path, "a");
+        fprintf(movie_file, "%s\n", curMovie->title);
+        fclose(movie_file);
+    
+        curMovie = curMovie->next; // move to the next movie in the list
     }
 }
 
@@ -302,6 +314,7 @@ int main() {
                     printf("Now processing the chosen file named %s\n", file_name);
                     printf("Created directory with the name %s\n\n", directory_name);
 
+                    parse_data(data, directory_name);
                    
                     // free dynamically assigned memory from functions
                     free(file_name);
@@ -314,13 +327,18 @@ int main() {
                     file_name = find_smallest();
                     //create a directory that ends in a random numbers 0-99999
                     directory_name = create_directory();
+                    //create linked list of movies and their data
+                    data = processMovieFile(file_name);
+
                     printf("Now processing the chosen file named %s\n", file_name);
                     printf("Created directory with the name %s\n\n", directory_name);
                     
-                   
+                    parse_data(data, directory_name);
+
                     // free dynamically assigned memory from functions
                     free(file_name);
                     free(directory_name);
+                    free(data);
                     break;
                 }
                 // Ask the user to enter a specific file name to parse
@@ -335,13 +353,18 @@ int main() {
                     }
                     //create a directory that ends in a random numbers 0-99999
                     directory_name = create_directory();
+                    //create linked list of movies and their data
+                    data = processMovieFile(custom_name);
+
                     printf("Now processing the chosen file named %s\n", file_name);
                     printf("Created directory with the name %s\n\n", directory_name);
+
+                    parse_data(data, directory_name);
                     
-                   
                     // free dynamically assigned memory from functions
                     free(file_name);
                     free(directory_name);
+                    free(data);
                     break;
                 }
                 // Prompt the user to choose again as their input was incorrect
