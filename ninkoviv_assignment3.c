@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 
 // function that returns a string of the largest csv file name in the directory
-int find_largest() {
+char* find_largest() {
     // variables to store the prefix and suffix we check before deciding to inspect file
     char prefix[] = "movies_";
     char suffix[] = ".csv";
@@ -16,8 +16,9 @@ int find_largest() {
     struct dirent *entry;
     struct stat dirStat;
     // Variables to store the current largest file name and file size
-    char *largest_file_name = calloc(256, sizeof(char));
-    int large_file_size;
+    char *largest_file_name = malloc(256 * sizeof(char));
+    long largest_file_size = 0;
+    long cur_file_size;
 
     while((entry = readdir(currDir)) != NULL){
         // checking if prefix is "movies_"
@@ -29,20 +30,72 @@ int find_largest() {
         if(strcmp(extension, suffix) != 0){
             continue;
         }
-        printf("%s\n", entry->d_name);
-        if(largest_file_name == ""){
-            printf("File name is empty!\n");
+
+        // Any files that make it to this portion of the loop are files that have movies_ 
+        // as a prefix and .csv as an extension to our file.
+        stat(entry->d_name, &dirStat);
+        cur_file_size = dirStat.st_size;
+        // if file size hasnt been changed then add current file as the largest
+        if(largest_file_size == 0) {
+            strcpy(largest_file_name, entry->d_name);
+            largest_file_size = cur_file_size;
+        }
+        // If the current file is larger than the largest file stored then update the newest largest file
+        else if (cur_file_size > largest_file_size) { 
+            strcpy(largest_file_name, entry->d_name);
+            largest_file_size = cur_file_size;
         }
         
     }
     closedir(currDir);
-    return 0;
-
+    return largest_file_name;
 }
 // function that returns a string of the smallest csv file name in the directory
 char* find_smallest() {
+    // variables to store the prefix and suffix we check before deciding to inspect file
+    char prefix[] = "movies_";
+    char suffix[] = ".csv";
 
+    // open the current directory
+    DIR* currDir = opendir(".");
+    struct dirent *entry;
+    struct stat dirStat;
+    // Variables to store the current smallest file name and file size
+    char *smallest_file_name = malloc(256 * sizeof(char));
+    long smallest_file_size = 0;
+    long cur_file_size;
+
+    while((entry = readdir(currDir)) != NULL){
+        // checking if prefix is "movies_"
+        if(strncmp(entry->d_name, prefix, strlen(prefix)) != 0){
+            continue;
+        }
+        // check if the extension of the file is a .csv
+        char *extension = strchr(entry->d_name, '.');
+        if(strcmp(extension, suffix) != 0){
+            continue;
+        }
+
+        // Any files that make it to this portion of the loop are files that have movies_ 
+        // as a prefix and .csv as an extension to our file.
+        stat(entry->d_name, &dirStat);
+        cur_file_size = dirStat.st_size;
+        // if file size hasnt been changed then add current file as the smallest
+        if(smallest_file_size == 0) {
+            strcpy(smallest_file_name, entry->d_name);
+            smallest_file_size = cur_file_size;
+        }
+        // If the current file is smaller than the smallest file stored then update the newest smallest file
+        else if (cur_file_size < smallest_file_size) { 
+            strcpy(smallest_file_name, entry->d_name);
+            smallest_file_size = cur_file_size;
+        }
+        
+    }
+    closedir(currDir);
+    return smallest_file_name;
 }
+
 // function that returns 1 or 0 depending on if the file exists within the directory or not
 int find_by_name() {
 
@@ -78,14 +131,16 @@ int main() {
 
                 // Begin to parse the largest file in the current directory
                 if(second_choice == 1) {
-                    find_largest();
-                    printf("You picked the largest file!\n");
+                    file_name = find_largest();
+                    printf("The largest file in the directory is: %s\n", file_name);
+                    free(file_name);
                     break;
                 }
                 // Begin to parse the smallest file in the current directory
                 else if(second_choice == 2){
                     file_name = find_smallest();
-                    printf("You picked the smallest file!\n");
+                    printf("The smallest file in the directory is: %s\n", file_name);
+                    free(file_name);
                     break;
                 }
                 // Ask the user to enter a specific file name to parse
