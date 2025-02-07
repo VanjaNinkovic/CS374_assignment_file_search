@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <time.h>
 
 
 // Struct for the movie linked list. 
@@ -257,6 +258,7 @@ void parse_data(struct movie* data, char* directory_name){
         FILE *movie_file = fopen(file_path, "a");
         fprintf(movie_file, "%s\n", curMovie->title);
         fclose(movie_file);
+        chmod(file_path, 0640);
     
         curMovie = curMovie->next; // move to the next movie in the list
     }
@@ -281,7 +283,7 @@ int main() {
     char* file_name; // var to store the file name to be processed
     char* directory_name; // var to store the created directory name
     struct movie *data; // pointer to a linked list of movie data
-    srandom(726); // Seeded the random calls
+    srandom(time(NULL)); // Seeded the random calls
     while(1) {
 
         printf("1. Select file to process\n");
