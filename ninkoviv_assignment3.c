@@ -5,6 +5,118 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
+
+// Struct for the movie linked list. 
+// Taken from assignment 2
+struct movie {
+    char* title;
+    int year;
+    char* language;
+    float rating;
+    struct movie *next;
+};
+
+// create Movie function to build structs based on exploration: Memory Allocation in Canvas
+// Taken from assignment 2
+struct movie* createMovie(char* title, int year, char* language, float rating) {
+    struct movie* curMovie = malloc(sizeof(struct movie));
+
+    curMovie->title = strdup(title);
+    curMovie->year = year; 
+    curMovie->language = strdup(language);
+    curMovie->rating = rating;
+    curMovie->next = NULL;
+
+    return curMovie;
+}
+
+
+/*
+ * Function: processMovieFile
+ *   Opens a file, reads and prints each line
+ *   filePath: path to the file
+ * 
+ *  This function shows sample code that opens a file, then in a loop reads and prints each line in that file.
+ *  You can use this code however you want in your Prog Assignment 2.
+ *  
+ *  TAKEN FROM ASSIGNMENT 2
+ */
+struct movie* processMovieFile(char* filePath){
+    char *currLine = NULL;
+    size_t len = 0;
+    // begining of the Linked List implementation
+    struct movie* head = NULL;
+    struct movie* tail = NULL;
+    struct movie* newMovie;
+    int size = 0;
+
+    // Open the specified file for reading only
+    FILE *movieFile = fopen(filePath, "r");
+    
+    // Reads the first line and does nothing to skip all the header collumns
+    getline(&currLine, &len, movieFile);
+
+    // Read the file line by line
+    while(getline(&currLine, &len, movieFile) != -1)
+    {
+        char* tokTitle;
+        char* tokYear;
+        int year;
+        char* tokLanguage;
+        char* tokRating;
+        float rating;
+        char* token;
+        char* savePtr;
+
+        // Tokenization of the line to turn string into variables used to create movie struct
+        token = strtok_r(currLine, ",", &savePtr);
+        tokTitle = strdup(token);
+        token = strtok_r(NULL, ",", &savePtr);
+        tokYear = strdup(token);
+        token = strtok_r(NULL, ",", &savePtr);
+        tokLanguage = strdup(token);
+        token = strtok_r(NULL, ",", &savePtr);
+        tokRating = strdup(token);
+
+        // converting string versions of year and rating to int and float respectively 
+        year = atoi(tokYear);
+        rating = strtod(tokRating,NULL);
+
+        // creating the linked list
+        newMovie = createMovie(tokTitle, year, tokLanguage, rating);
+
+        if(head == NULL) {
+            // if there is no head set the first movie as the head and tail to initiate the begining of the list
+            head = newMovie;
+            tail = newMovie;
+        } else {
+            // if the new struct is not the first one then you add it to the end of the list
+            tail->next = newMovie;
+            tail = newMovie;
+        }
+        // printf("The current tail's title is: %s\n", tail->title);
+        free(tokTitle);
+        free(tokYear);
+        free(tokLanguage);
+        free(tokRating);
+
+        size++;       
+    }
+
+    // Free the memory allocated by getline for currLine
+    free(currLine);
+    // Close the file
+    fclose(movieFile);
+
+    return head;
+}
+
+
+
+
+
+
+
 // function that returns a string of the largest csv file name in the directory
 char* find_largest() {
     // variables to store the prefix and suffix we check before deciding to inspect file
@@ -129,6 +241,25 @@ char* create_directory(){
 }
 
 
+void parse_data(struct movie* data){
+    struct movie* curMovie;
+    curMovie = data;
+    // Iterate through linked list and print movie if it matches the year parameter
+    while(curMovie != NULL) {
+        //do something
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 
 // Main function to run the entire program
 int main() {
@@ -137,6 +268,7 @@ int main() {
     int second_choice; // var to store choice at the second menu
     char* file_name; // var to store the file name to be processed
     char* directory_name; // var to store the created directory name
+    struct movie *data; // pointer to a linked list of movie data
     srandom(726); // Seeded the random calls
     while(1) {
 
@@ -160,23 +292,35 @@ int main() {
 
                 // Begin to parse the largest file in the current directory
                 if(second_choice == 1) {
+                    //locate largest file
                     file_name = find_largest();
                     //create a directory that ends in a random numbers 0-99999
                     directory_name = create_directory();
-                    printf("The largest file in the directory is: %s\n", file_name);
-                    printf("The name of the directory is: %s", directory_name);
-                    
+                    //create linked list of movies and their data
+                    data = processMovieFile(file_name);
+
+                    printf("Now processing the chosen file named %s\n", file_name);
+                    printf("Created directory with the name %s\n\n", directory_name);
+
                    
                     // free dynamically assigned memory from functions
                     free(file_name);
                     free(directory_name);
+                    free(data);
                     break;
                 }
                 // Begin to parse the smallest file in the current directory
                 else if(second_choice == 2){
                     file_name = find_smallest();
-                    printf("The smallest file in the directory is: %s\n", file_name);
+                    //create a directory that ends in a random numbers 0-99999
+                    directory_name = create_directory();
+                    printf("Now processing the chosen file named %s\n", file_name);
+                    printf("Created directory with the name %s\n\n", directory_name);
+                    
+                   
+                    // free dynamically assigned memory from functions
                     free(file_name);
+                    free(directory_name);
                     break;
                 }
                 // Ask the user to enter a specific file name to parse
@@ -189,8 +333,15 @@ int main() {
                         free(custom_name);
                         continue;
                     }
-                    printf("File name '%s' found and will be processed.\n", custom_name);
-                    free(custom_name);
+                    //create a directory that ends in a random numbers 0-99999
+                    directory_name = create_directory();
+                    printf("Now processing the chosen file named %s\n", file_name);
+                    printf("Created directory with the name %s\n\n", directory_name);
+                    
+                   
+                    // free dynamically assigned memory from functions
+                    free(file_name);
+                    free(directory_name);
                     break;
                 }
                 // Prompt the user to choose again as their input was incorrect
